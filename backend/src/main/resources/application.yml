@@ -1,0 +1,28 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: myorbit
+  config:
+    import: optional:file:./application-local.yml
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/myorbit}
+      auto-index-creation: true
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+app:
+  jwt-secret: ${JWT_SECRET:dev-only-change-this-secret}
+  llm-url: ${LLM_API_URL:}
+  llm-key: ${LLM_API_KEY:}
+  llm-model: ${LLM_MODEL:llama-3.1-8b-instant}
+  sms-webhook-url: ${SMS_WEBHOOK_URL:}
+  mail-host: ${MAIL_HOST:}
+  mail-port: ${MAIL_PORT:587}
+  mail-username: ${MAIL_USERNAME:}
+  mail-password: ${MAIL_PASSWORD:}
+  mail-from: ${MAIL_FROM:}
+  mail-start-tls: ${MAIL_STARTTLS:true}
