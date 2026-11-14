@@ -1,0 +1,11 @@
+{
+  "name": "AI Life Scheduler",
+  "short_name": "MyOrbit",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070514",
+  "theme_color": "#070514",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
