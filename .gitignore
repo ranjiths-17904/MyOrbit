@@ -1,17 +1,32 @@
-node_modules/
-dist/
-.env
-.env.local
-*.log
-.DS_Store
-.idea/
-.vscode/
-backend/target/
-backend/application-local.yml
-backend/.mvn/wrapper/maven-wrapper.jar
-*.iml
-.classpath
-.project
-.settings/
 
+# Node dependencies
 node_modules/
+**/node_modules/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Build output
+dist/
+build/
+**/dist/
+**/build/
+.vite/
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# IDE and OS
+.idea/
+.DS_Store
+Thumbs.db
