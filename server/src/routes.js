@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import { reply } from './assistant.js';
+import { buildRoutine } from './routine.js';
+import { applyRoutine } from './routineService.js';
 import { changePassword, login, readToken, register } from './auth.js';
 import { config } from './config.js';
 import { COLLECTIONS, getDb } from './db.js';
@@ -214,6 +216,22 @@ router.post('/scheduler/approve', async (req, res, next) => {
     next(error);
   }
 });
+router.post('/routine/preview', async (req, res, next) => {
+  try {
+    res.json(buildRoutine(req.body || {}));
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post('/routine/apply', async (req, res, next) => {
+  try {
+    res.json(await applyRoutine(req.userId, req.body || {}));
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.post('/assistant', async (req, res, next) => {
   try {
     const message = text(req.body?.message);

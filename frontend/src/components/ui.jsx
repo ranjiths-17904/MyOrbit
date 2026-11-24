@@ -16,10 +16,10 @@ export function useAction() {
   };
 }
 
-export function Check({ checked, defaultChecked, onChange, name, label, ariaLabel, className = '' }) {
+export function Check({ checked, defaultChecked, onChange, name, label, ariaLabel, className = '', value }) {
   return (
     <label className={`orbit-check ${className}`.trim()}>
-      <input type="checkbox" name={name} checked={checked} defaultChecked={defaultChecked} onChange={onChange} aria-label={ariaLabel || label || 'Checkbox'} />
+      <input type="checkbox" name={name} value={value} checked={checked} defaultChecked={defaultChecked} onChange={onChange} aria-label={ariaLabel || label || 'Checkbox'} />
       <span className="mark" aria-hidden="true" />
       {label ? <span>{label}</span> : null}
     </label>
@@ -48,7 +48,7 @@ export function Modal({ title, onClose, children, wide }) {
       <div className={`modal${wide ? ' wide' : ''}`} role="dialog" aria-modal="true" aria-label={title} onMouseDown={(event) => event.stopPropagation()}>
         <div className="card-head">
           <h3>{title}</h3>
-          <button className="btn-ghost" type="button" onClick={onClose}>Close</button>
+          <button className="btn-cancel" type="button" onClick={onClose}>Cancel</button>
         </div>
         {children}
       </div>
@@ -84,7 +84,7 @@ export function Feedback() {
           <p>{confirmState.message}</p>
           <div className="row-actions">
             <button className="btn-danger" type="button" onClick={() => { confirmState.resolve(true); setConfirmState(null); }}>{confirmState.confirmLabel || 'Delete'}</button>
-            <button className="btn-ghost" type="button" onClick={() => { confirmState.resolve(false); setConfirmState(null); }}>Cancel</button>
+            <button className="btn-cancel" type="button" onClick={() => { confirmState.resolve(false); setConfirmState(null); }}>Cancel</button>
           </div>
         </Modal>
       )}

@@ -45,7 +45,8 @@ export function HealthPage() {
       <div className="split">
         <form className="card" onSubmit={save}>
           <h3>Today</h3>
-          <p className="muted">Score from your log: {fitnessDayScore(existing, vault.profile)}%. Goal is about {goal} minutes, never a diagnosis.</p>
+          <p className="muted">Score from your log: {fitnessDayScore(existing, vault.profile)}%. Suggested movement is about {goal} minutes. This is a personal log, not a diagnosis.</p>
+          {vault.profile.routine ? <p className="notice">Your routine suggests about {vault.profile.routine.waterGlasses} glasses of water and {vault.profile.routine.exerciseMinutes} minutes of easy movement. {vault.profile.routine.disclaimer}</p> : null}
           <Field label="Water (glasses)"><input name="waterGlasses" type="number" min="0" max="20" defaultValue={existing.waterGlasses} /></Field>
           <Field label="Sleep hours"><input name="sleepHours" type="number" min="0" max="14" step="0.5" defaultValue={existing.sleepHours} /></Field>
           <Field label="Wake time"><input name="wakeTime" type="time" defaultValue={existing.wakeTime} /></Field>

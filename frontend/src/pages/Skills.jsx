@@ -74,6 +74,7 @@ export function SkillsPage() {
             <Field label="Notes"><textarea name="notes" defaultValue={editing.notes || ''} /></Field>
             <div className="row-actions">
               <button className="btn" type="submit">Save</button>
+              <button className="btn-cancel" type="button" onClick={() => setEditing(null)}>Cancel</button>
               {editing.id ? <button className="btn-danger" type="button" onClick={async () => {
                 const ok = await confirm({ title: 'Delete skill', message: `Delete ${editing.name}? Past blocks stay on the calendar.`, confirmLabel: 'Delete' });
                 if (ok) run(() => deleteSkill(editing.id), 'Skill deleted.').then(() => setEditing(null));

@@ -48,6 +48,15 @@ export function Dashboard() {
           <span>This workspace is sample data so you can see the layout. Create an account for an empty plan that starts at zero.</span>
         </div>
       ) : null}
+      {vault.profile.routine && !vault.demo ? (
+        <div className="routine-strip">
+          <span>Routine</span>
+          <strong>{vault.profile.routine.waterGlasses} glasses water</strong>
+          <strong>{vault.profile.routine.exerciseMinutes} min movement</strong>
+          <strong>{vault.profile.routine.mobileLimitMinutes} min phone</strong>
+          <Link to="/scheduler">Review this week</Link>
+        </div>
+      ) : null}
       <div className="hero">
         <div className="hello-row">
           <div className="avatar" aria-hidden="true"><span style={{ fontSize: 28 }}>🧑‍💻</span></div>

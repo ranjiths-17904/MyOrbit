@@ -85,6 +85,7 @@ export function TasksPage() {
             <p className="muted">File attachments are not stored. Paste a link in notes if you need a reference.</p>
             <div className="row-actions">
               <button className="btn" type="submit">Save</button>
+              <button className="btn-cancel" type="button" onClick={() => setEditing(null)}>Cancel</button>
               {editing.id ? <button className="btn-danger" type="button" onClick={async () => {
                 const ok = await confirm({ title: 'Delete task', message: editing.title, confirmLabel: 'Delete' });
                 if (ok) run(() => deleteTask(editing.id), 'Task deleted.').then(() => setEditing(null));

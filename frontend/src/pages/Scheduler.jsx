@@ -54,7 +54,7 @@ export function SchedulerPage() {
             {proposal.review ? <p>This review scores the week already on the calendar, then the draft applies those weights. Planned {minutesToLabel(proposal.review.plannedMin)}, finished {minutesToLabel(proposal.review.actualMin)}.</p> : null}
             <div className="row-actions">
               <button className="btn" type="button" onClick={() => run(() => approveProposal(), 'Week approved and saved.')}>Approve and activate</button>
-              <button className="btn-ghost" type="button" onClick={discardProposal}>Discard draft</button>
+              <button className="btn-cancel" type="button" onClick={discardProposal}>Cancel draft</button>
             </div>
           </article>
           <div className="week-board">

@@ -62,6 +62,7 @@ export function NotesPage() {
             <Field label="Body"><textarea name="body" required defaultValue={editing.body} style={{ minHeight: 160 }} /></Field>
             <div className="row-actions">
               <button className="btn" type="submit">Save</button>
+              <button className="btn-cancel" type="button" onClick={() => setEditing(null)}>Cancel</button>
               {editing.id ? <button className="btn-danger" type="button" onClick={async () => {
                 const ok = await confirm({ title: 'Delete note', message: editing.title, confirmLabel: 'Delete' });
                 if (ok) run(() => deleteNote(editing.id), 'Note deleted.').then(() => setEditing(null));

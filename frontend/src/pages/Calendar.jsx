@@ -121,6 +121,7 @@ export function CalendarPage() {
             </div>
             <div className="row-actions">
               <button className="btn" type="submit">Save</button>
+              <button className="btn-cancel" type="button" onClick={() => setEditing(null)}>Cancel</button>
               {editing.id ? <button className="btn-danger" type="button" onClick={async () => {
                 const ok = await confirm({ title: 'Remove block', message: 'This removes the time block. The linked task, if any, stays in Tasks.', confirmLabel: 'Remove' });
                 if (ok) run(() => deleteBlock(editing.id), 'Block removed.').then(() => setEditing(null));

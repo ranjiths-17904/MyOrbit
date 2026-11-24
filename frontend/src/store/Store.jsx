@@ -1,7 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { api, setApiBase } from '../api.js';
 import { buildDemoVault, emptyVault } from '../data/demo.js';
-import { nowIso, todayISO, uid } from '../lib/dates.js';
+import { nowIso, startOfWeek, todayISO, uid } from '../lib/dates.js';
+import { buildRoutine } from '../lib/routine.js';
 import { evaluateWeek, findOverlap, generateWeekPlan, rescheduleMissed } from '../lib/scheduler.js';
 
 const KEY = 'myorbit-db-v1';
@@ -406,6 +407,103 @@ export function StoreProvider({ children }) {
     toast('Switched to this browser. Data stays on this device until you connect a server.');
   };
 
+  const applyRoutine = async (input) => {
+    const today = todayISO();
+    if (dbRef.current.useApi) {
+      const saved = await api('/api/routine/apply', { method: 'POST', token: dbRef.current.token, body: { ...input, today } });
+      let proposal = null;
+      let scheduleNote = '';
+      try {
+        proposal = generateWeekPlan({
+          profile: saved.profile,
+          skills: saved.skills,
+          tasks: saved.tasks,
+          weekStart: startOfWeek(today),
+          previousBlocks: saved.blocks || []
+        });
+        proposal = await api('/api/scheduler/generate', { method: 'POST', token: dbRef.current.token, body: proposal });
+      } catch {
+        scheduleNote = ' The weekly draft was not stored. Open Smart Scheduler and generate it.';
+      }
+      patchVault((current) => ({
+        ...current,
+        profile: { ...current.profile, ...saved.profile, onboarded: true },
+        skills: saved.skills,
+        tasks: saved.tasks,
+        routines: saved.routines,
+        proposal
+      }));
+      saved.scheduleNote = scheduleNote;
+      return saved;
+    }
+    const plan = buildRoutine(input);
+    const current = dbRef.current.vaults[dbRef.current.sessionUserId];
+    const skills = mergeBy(current.skills, plan.skills.map((skill) => ({ ...skill, id: uid(), createdAt: nowIso(), updatedAt: nowIso() })), (item) => item.name);
+    const tasks = mergeBy(current.tasks, plan.tasks.map((task) => ({
+      ...task,
+      id: uid(),
+      startDate: today,
+      dueDate: today,
+      createdAt: nowIso(),
+      updatedAt: nowIso()
+    })), (item) => item.title);
+    const routineRecord = { id: uid(), name: 'Daily routine', minutes: plan.exerciseMinutes, exercises: plan.habits.map((habit) => habit.title), source: 'routine' };
+    const routines = mergeBy(current.routines, [routineRecord], (item) => item.name);
+    const goals = mergeBy(current.profile.goals || current.goals || [], plan.goals.map((goal) => ({ ...goal, id: uid(), targetDate: '' })), (item) => item.title);
+    const profile = {
+      ...current.profile,
+      age: plan.age,
+      weightKg: plan.weightKg,
+      heightCm: plan.heightCm,
+      interests: plan.interests,
+      learningGoals: plan.learningGoals,
+      careerTarget: plan.careerTarget,
+      wakeTime: plan.wakeTime,
+      sleepTime: plan.sleepTime,
+      preferredStudyStart: plan.preferredStudyStart,
+      studyHoursPerDay: plan.studyHoursPerDay,
+      studyDays: current.profile.studyDays?.length ? current.profile.studyDays : plan.studyDays,
+      mobileLimitMinutes: plan.mobileLimitMinutes,
+      onboarded: true,
+      planStart: current.profile.planStart || today,
+      fitness: {
+        ...(current.profile.fitness || {}),
+        exerciseMinutes: plan.exerciseMinutes,
+        waterGlasses: plan.waterGlasses,
+        sleepHours: plan.sleepHours,
+        restDays: current.profile.fitness?.restDays?.length ? current.profile.fitness.restDays : plan.restDays
+      },
+      goals,
+      routine: {
+        waterGlasses: plan.waterGlasses,
+        exerciseMinutes: plan.exerciseMinutes,
+        sleepHours: plan.sleepHours,
+        mobileLimitMinutes: plan.mobileLimitMinutes,
+        stack: plan.stack,
+        habits: plan.habits,
+        disclaimer: plan.disclaimer,
+        generatedAt: nowIso()
+      }
+    };
+    const proposal = generateWeekPlan({
+      profile,
+      skills,
+      tasks,
+      weekStart: startOfWeek(today),
+      previousBlocks: current.blocks || []
+    });
+    patchVault((vaultData) => ({
+      ...vaultData,
+      profile,
+      skills,
+      tasks,
+      routines,
+      goals,
+      proposal
+    }));
+    return { profile, skills, tasks, routines, plan };
+  };
+
   const exportVault = () => vault;
 
   const importVault = async (data) => {
@@ -432,10 +530,21 @@ export function StoreProvider({ children }) {
     addBlock, updateBlock, deleteBlock,
     saveFitness, saveMobile, addRoutine, deleteRoutine,
     proposeWeek, approveProposal, discardProposal, updateProposalBlock, reschedule, markMissedPast,
-    pushNotification, markAllRead, setTheme, connectServer, useBrowserOnly, exportVault, importVault, remote
+    pushNotification, markAllRead, setTheme, connectServer, useBrowserOnly, exportVault, importVault, applyRoutine, remote
   }), [db, vault, toasts, confirmState, pending, track]);
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
+}
+
+function mergeBy(existing, incoming, keyOf) {
+  const list = [...(existing || [])];
+  const keys = new Set(list.map((item) => keyOf(item)));
+  for (const item of incoming) {
+    if (keys.has(keyOf(item))) continue;
+    keys.add(keyOf(item));
+    list.push(item);
+  }
+  return list;
 }
 
 function upsertDate(list, record) {

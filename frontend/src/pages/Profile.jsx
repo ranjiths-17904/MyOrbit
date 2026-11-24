@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { uid } from '../lib/dates.js';
+import { INTERESTS } from '../lib/routine.js';
 import { Check, Field, Page, useAction } from '../components/ui.jsx';
 import { useStore } from '../store/Store.jsx';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export function ProfilePage() {
-  const { vault, updateProfile, logout } = useStore();
+  const { vault, updateProfile, logout, applyRoutine } = useStore();
   const run = useAction();
   const profile = vault.profile;
   const [goal, setGoal] = useState('');
@@ -22,6 +23,11 @@ export function ProfilePage() {
       ...profile,
       name: data.get('name'),
       careerTarget: data.get('careerTarget'),
+      age: Number(data.get('age')),
+      weightKg: Number(data.get('weightKg')),
+      heightCm: Number(data.get('heightCm')),
+      learningGoals: data.get('learningGoals'),
+      interests: data.getAll('interest'),
       wakeTime: data.get('wakeTime'),
       sleepTime: data.get('sleepTime'),
       preferredStudyStart: data.get('preferredStudyStart'),
@@ -44,7 +50,11 @@ export function ProfilePage() {
         <div className="form-grid">
           <Field label="Name"><input name="name" required defaultValue={profile.name} /></Field>
           <Field label="Email"><input value={profile.email || ''} disabled /></Field>
+          <Field label="Age"><input name="age" type="number" min="13" max="90" defaultValue={profile.age || ''} /></Field>
+          <Field label="Weight (kg)"><input name="weightKg" type="number" min="30" max="250" step="0.1" defaultValue={profile.weightKg || ''} /></Field>
+          <Field label="Height (cm)"><input name="heightCm" type="number" min="120" max="230" defaultValue={profile.heightCm || ''} /></Field>
           <Field label="Career target" full><input name="careerTarget" defaultValue={profile.careerTarget || ''} /></Field>
+          <Field label="Learning goals" full><textarea name="learningGoals" defaultValue={profile.learningGoals || ''} /></Field>
           <Field label="Study hours / day"><input name="studyHoursPerDay" type="number" min="1" max="12" step="0.5" defaultValue={profile.studyHoursPerDay} /></Field>
           <Field label="Mobile limit (min)"><input name="mobileLimitMinutes" type="number" min="15" defaultValue={profile.mobileLimitMinutes} /></Field>
           <Field label="Wake"><input name="wakeTime" type="time" defaultValue={profile.wakeTime} /></Field>
@@ -54,11 +64,32 @@ export function ProfilePage() {
           <Field label="Water goal"><input name="waterGlasses" type="number" min="1" max="16" defaultValue={profile.fitness?.waterGlasses || 8} /></Field>
           <Field label="Sleep goal (hours)"><input name="sleepHours" type="number" min="4" max="10" step="0.5" defaultValue={profile.fitness?.sleepHours || 7} /></Field>
         </div>
+        <p>Interests</p>
+        <div className="filters">{INTERESTS.map((item) => <Check key={item.id} className="chip" name="interest" value={item.id} defaultChecked={(profile.interests || []).includes(item.id)} label={item.label} />)}</div>
         <p>Study days</p>
         <div className="filters">{DAYS.map((label, index) => <Check key={label} className="chip" name={`day-${index}`} defaultChecked={(profile.studyDays || []).includes(index)} label={label} />)}</div>
         <p>Fitness rest days</p>
         <div className="filters">{DAYS.map((label, index) => <Check key={`rest-${label}`} className="chip" name={`rest-${index}`} defaultChecked={(profile.fitness?.restDays || [0]).includes(index)} label={label} />)}</div>
-        <button className="btn" type="submit">Save profile</button>
+        <div className="row-actions">
+          <button className="btn" type="submit">Save profile</button>
+          <button className="btn" type="button" onClick={(event) => {
+            const data = new FormData(event.currentTarget.form);
+            const studyDays = DAYS.map((_, index) => index).filter((index) => data.get(`day-${index}`) === 'on');
+            run(() => applyRoutine({
+              age: Number(data.get('age')),
+              weightKg: Number(data.get('weightKg')),
+              heightCm: Number(data.get('heightCm')),
+              interests: data.getAll('interest'),
+              learningGoals: data.get('learningGoals'),
+              careerTarget: data.get('careerTarget'),
+              studyHoursPerDay: Number(data.get('studyHoursPerDay')),
+              wakeTime: data.get('wakeTime'),
+              sleepTime: data.get('sleepTime'),
+              studyDays
+            }), 'Routine updated. New skills and tasks were added without removing what you already finished.');
+          }}>Generate routine</button>
+        </div>
+        {profile.routine?.disclaimer ? <p className="notice">{profile.routine.disclaimer}</p> : null}
       </form>
       <article className="card" style={{ marginTop: 12 }}>
         <h3>Goals</h3>
